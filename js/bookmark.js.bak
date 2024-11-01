@@ -1,0 +1,62 @@
+function wpBookmarksClose() {
+	if(window.wpBookmarksDebug) console.log('wpBookmarksClose');
+	$('#wpBookmarks_box').hide();
+}
+
+function wpBookmarksInit() {
+	if(window.wpBookmarksDebug) console.log('wpBookmarksInit');
+	if(window.wpBookmarksInitialized!=true) {
+		if(window.wpBookmarksDebug) console.log('doInit');
+		// load stylesheets
+		$('head').append('<link rel="stylesheet" href="'+window.wpBookmarksPluginPath+'/css/bookmark.css?'+Math.random()+'" type="text/css" />');
+		
+		// build box-html
+		var box = $('<div id="wpBookmarks_box"><a id="wpBookmarks_titleBar" href="#" onclick="javascript:{wpBookmarksClose();}">Schlie&#223;en</a><iframe id="wpBookmarks_iframe" src="javascript:"></iframe></div>');
+		$(document.body).append(box);
+		
+		// set init-status
+		window.wpBookmarksInitialized=true;
+	}
+}
+
+function getSelectionText() {
+    var text = "";
+    if (window.getSelection) {
+        text = window.getSelection().toString();
+    } else if (document.selection && document.selection.type != "Control") {
+        text = document.selection.createRange().text;
+    }
+    if(window.wpBookmarksDebug) console.log('getSelectionText: '+text);
+    return text;
+}
+
+function showWpBookmarks_box() {
+	if(window.wpBookmarksDebug) console.log('showWpBookmarks_box');
+	// build html-box
+	wpBookmarksInit();
+	
+	// build url
+	url = window.wpBookmarksAdminPath+'post-new.php?post_type=bookmarks&action=browserbookmark';
+	url+='&post_title='+encodeURIComponent(jQuery(document).attr('title'));
+	url+='&post_content='+encodeURIComponent(getSelectionText());
+	url+='&post_url='+encodeURIComponent(jQuery(location).attr('href'));
+	
+	// set source and show box
+	$("#wpBookmarks_iframe").attr("src", url.replace(/https:\/\/sslsites.de\/kb.conlabz.de/, "http://kb.conlabz.de"));
+	$("#wpBookmarks_box").show();
+};
+
+function onBookmarkClicked() {
+	if(window.wpBookmarksDebug) console.log('onBookmarkClicked');
+	// load jquery
+	if(window.wpBookmarksInitialized!=true) {
+		// callback
+		window.DOMLoaded = function() {
+			showWpBookmarks_box();
+		}
+		loadScript("https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js");
+	}
+	else {
+		showWpBookmarks_box();
+	}
+}
